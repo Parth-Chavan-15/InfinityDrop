@@ -43,6 +43,9 @@ Open that URL on any device connected to the same Wi-Fi network.
 
 Enter the PIN to unlock the interface and start dropping files!
 
+### 5. Pull Files from PC to Device
+If you want to transfer files from your laptop back to your connected mobile device, simply copy and paste those files directly into the final_uploads folder on your laptop. Click "Unlock & Refresh Files" on your mobile device, and they will immediately appear ready to download!
+
 ## 🛠️ Tech Stack
 Backend: Python, Flask, Werkzeug
 
