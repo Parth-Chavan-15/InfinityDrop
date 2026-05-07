@@ -1,0 +1,21 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+.venv/
+
+# Editor / IDE configurations
+.vscode/
+.idea/
+
+# InfinityDrop Specific Folders (Do not push user uploads to GitHub!)
+temp_chunks/
+final_uploads/
+
+# OS generated files
+.DS_Store
+Thumbs.db
