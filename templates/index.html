@@ -4,10 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InfinityDrop Secure</title>
-    <script src="https://cdn.jsdelivr.net/npm/resumablejs@1.1.0/resumable.min.js"></script>
+    <script src="/static/resumable.min.js"></script>
+    <script>
+        if (typeof Resumable === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/npm/resumablejs@1.1.0/resumable.min.js"><\/script>');
+        }
+    </script>
     <style>
         :root { --primary: #00ff88; --bg: #0f0f13; --card: #1a1a20; --text: #ffffff; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
         .container { width: 100%; max-width: 450px; background: var(--card); padding: 40px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; border: 1px solid #333; margin-bottom: 20px; }
         h1 { margin-bottom: 5px; font-weight: 800; letter-spacing: -1px;}
         p { color: #888; margin-bottom: 30px; font-size: 0.9rem;}
@@ -17,18 +22,62 @@
         .progress-container { margin-top: 25px; background: #333; height: 10px; border-radius: 10px; overflow: hidden; display: none; }
         .progress-bar { height: 100%; width: 0%; background: var(--primary); transition: width 0.2s; }
         
-        /* [CHANGED] New style for the list of status messages */
         .status-log { margin-top: 15px; text-align: left; max-height: 150px; overflow-y: auto; width: 100%; font-size: 0.85rem; color: #888; }
         .success-msg { color: var(--primary); margin-bottom: 4px; }
 
         /* DOWNLOADS */
         .downloads-box { width: 100%; max-width: 450px; text-align: left; opacity: 0.5; pointer-events: none; transition: 0.3s; }
         .downloads-box.active { opacity: 1; pointer-events: all; }
-        .file-item { background: #2a2a35; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
-        .file-item a { color: var(--primary); text-decoration: none; font-weight: bold; }
-        .file-item span { color: #ccc; word-break: break-all; margin-right: 10px; }
-        .refresh-btn { background: #333; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; margin-bottom: 15px; width: 100%; }
+        .file-item { background: #2a2a35; padding: 14px 16px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
+        .file-details { display: flex; flex-direction: column; gap: 3px; max-width: 68%; }
+        .file-title { color: #eee; word-break: break-all; font-size: 0.9rem; font-weight: 500; }
+        .file-size { color: #888; font-size: 0.75rem; }
+        .download-action {
+            background: rgba(0, 255, 136, 0.12);
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 7px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 136, 0.25);
+            white-space: nowrap;
+        }
+        .download-action:hover { background: rgba(0, 255, 136, 0.22); }
+        .refresh-btn { background: #333; color: white; padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; margin-bottom: 15px; width: 100%; font-weight: 600; font-size: 0.9rem; }
         .refresh-btn:hover { background: #444; }
+
+        /* UX TIP & EMPTY STATE */
+        .tip-box {
+            background: #20202a;
+            border: 1px solid #333345;
+            border-left: 3px solid var(--primary);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            font-size: 0.82rem;
+            line-height: 1.45;
+            color: #bbb;
+        }
+        .tip-box strong { color: #fff; }
+        .tip-box code { background: #15151e; color: var(--primary); padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 0.8rem; }
+        .tip-icon { font-size: 1.2rem; line-height: 1; margin-top: 1px; }
+
+        .empty-state {
+            text-align: center;
+            padding: 24px 14px;
+            background: #23232c;
+            border-radius: 12px;
+            border: 1px dashed #3a3a4c;
+            margin-top: 10px;
+        }
+        .empty-icon { font-size: 2rem; margin-bottom: 6px; }
+        .empty-title { color: #fff; font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+        .empty-desc { color: #888; font-size: 0.8rem; line-height: 1.4; }
+        .empty-desc code { color: var(--primary); font-family: monospace; }
     </style>
 </head>
 <body>
@@ -54,9 +103,19 @@
 </div>
 
 <div class="downloads-box" id="downloadsBox">
-    <h3 style="color: white; border-bottom: 1px solid #333; padding-bottom: 10px;">
+    <h3 style="color: white; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 12px;">
         ⬇️ Download from Laptop
     </h3>
+
+    <!-- Clear UX Tip for Laptop to Mobile Sharing -->
+    <div class="tip-box">
+        <div class="tip-icon">💡</div>
+        <div>
+            <strong>Receive files from your PC:</strong><br>
+            Place files inside <code>final_uploads</code> on your laptop (or drop on laptop dashboard), then tap <b>Unlock & Refresh Files</b>.
+        </div>
+    </div>
+
     <button class="refresh-btn" onclick="fetchFiles()">🔓 Unlock & Refresh Files</button>
     <div id="fileList"></div>
 </div>
@@ -71,10 +130,9 @@
     });
 
     var pinInput = document.getElementById('pinCode');
-    var uploadLog = document.getElementById('uploadLog'); // [CHANGED]
+    var uploadLog = document.getElementById('uploadLog');
     var downloadsBox = document.getElementById('downloadsBox');
     
-    // NEW: Flag to prevent spamming alerts
     let errorAlertShown = false;
 
     // Helper to log messages to the screen
@@ -83,14 +141,14 @@
         div.innerText = msg;
         if (isSuccess) div.className = 'success-msg';
         uploadLog.appendChild(div);
-        uploadLog.scrollTop = uploadLog.scrollHeight; // Auto-scroll to bottom
+        uploadLog.scrollTop = uploadLog.scrollHeight;
     }
 
     // Auto-Connect on PIN entry
     pinInput.addEventListener('input', function() {
         if (this.value.length === 6) {
             this.blur();
-            fetchFiles(); // Try to login and get files
+            fetchFiles();
         }
     });
 
@@ -99,20 +157,16 @@
     r.assignDrop(document.getElementById('dropTarget'));
 
     r.on('fileAdded', function(file) {
-        // CHECK 1: Is PIN missing?
         if (pinInput.value.length !== 6) { 
-            r.removeFile(file); // Remove the file so it doesn't stay in queue
-            
-            // CHECK 2: Have we already shown an alert recently?
+            r.removeFile(file);
             if (!errorAlertShown) {
-                alert("Enter PIN first!"); 
+                alert("Enter the 6-digit PIN first!"); 
                 errorAlertShown = true;
                 setTimeout(() => { errorAlertShown = false; }, 2000);
             }
             return; 
         }
         
-        // If PIN is okay, proceed
         logMessage("Queued: " + file.fileName);
         r.opts.headers = { 'X-Upload-PIN': pinInput.value };
         r.upload();
@@ -124,27 +178,21 @@
         document.getElementById('progressBar').style.width = percent + '%';
     });
 
-    // [CHANGED] Handle individual file success (Show message 1.jpg sent...)
     r.on('fileSuccess', function(file) {
         logMessage("✅ " + file.fileName + " sent successfully", true);
-        // NOTE: We do NOT reload the page here. We wait for the whole batch.
     });
 
-    // [ADDED] Handle Batch Completion (Reset PIN here)
     r.on('complete', function() {
         logMessage("🏁 All files sent. Rotating PIN...");
 
-        // Call server to rotate PIN
         fetch('/reset-pin', { 
             method: 'POST',
             headers: { 'X-Upload-PIN': pinInput.value }
         })
         .then(() => {
             alert("Transfer Complete! PIN has been rotated.");
-            pinInput.value = ""; // Clear PIN box on client
-            downloadsBox.classList.remove('active'); // Lock downloads
-            
-            // Optional: Reload page after a delay to force fresh start
+            pinInput.value = "";
+            downloadsBox.classList.remove('active');
             setTimeout(() => location.reload(), 1000);
         })
         .catch(err => console.error("Reset failed", err));
@@ -152,7 +200,6 @@
 
     r.on('fileError', function(file, message) {
         logMessage("❌ Error: " + file.fileName + " - " + message);
-        
         if (!errorAlertShown) {
             alert("Upload Failed: " + message);
             errorAlertShown = true;
@@ -162,41 +209,64 @@
 
     // DOWNLOAD LOGIC
     function fetchFiles() {
-        var pin = pinInput.value;
+        var pin = pinInput.value.trim();
         if (pin.length < 6) { alert("Please enter the 6-digit PIN first."); return; }
 
         var list = document.getElementById('fileList');
-        uploadLog.innerHTML = ""; // Clear log
-        logMessage('Authenticating...');
+        uploadLog.innerHTML = "";
+        logMessage('Authenticating with PIN...');
         
         fetch('/files', {
             headers: { 'X-Upload-PIN': pin }
         })
-        .then(response => {
-            if (response.status === 403) throw new Error("Wrong PIN");
+        .then(async response => {
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(errText || ("Error " + response.status));
+            }
             return response.json();
         })
         .then(files => {
-            downloadsBox.classList.add('active'); // Unlock UI
-            logMessage("✅ Connected");
+            downloadsBox.classList.add('active');
+            logMessage("✅ Connected to Laptop", true);
             list.innerHTML = '';
             if (files.length === 0) {
-                list.innerHTML = '<p style="color:#666;">Laptop folder is empty.</p>';
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <div class="empty-title">final_uploads folder is empty</div>
+                        <div class="empty-desc">Place files into <code>final_uploads</code> on your laptop, then tap refresh above.</div>
+                    </div>
+                `;
                 return;
             }
-            files.forEach(file => {
+            files.forEach(fileItem => {
+                var fileName = typeof fileItem === 'string' ? fileItem : fileItem.name;
+                var fileSize = typeof fileItem === 'object' && fileItem.size ? fileItem.size : '';
                 var item = document.createElement('div');
                 item.className = 'file-item';
-                var encodedFile = encodeURIComponent(file);
+                var encodedFile = encodeURIComponent(fileName);
                 item.innerHTML = `
-                    <span>${file}</span>
-                    <a href="/download/${encodedFile}?token=${pin}" download>Download</a>
+                    <div class="file-details">
+                        <span class="file-title">📄 ${fileName}</span>
+                        ${fileSize ? `<span class="file-size">${fileSize}</span>` : ''}
+                    </div>
+                    <a class="download-action" href="/download/${encodedFile}?token=${pin}" download>⬇️ Download</a>
                 `;
                 list.appendChild(item);
             });
         })
         .catch(err => {
-            logMessage("🔒 Access Denied");
+            var msg = err.message || "";
+            if (msg.includes("Wrong PIN") || msg.includes("Invalid PIN")) {
+                logMessage("❌ Wrong PIN. Check laptop screen.");
+                alert("Incorrect PIN! Please check the 6-digit PIN on your laptop.");
+            } else if (msg.includes("Busy")) {
+                logMessage("🔒 Server Busy: Another device connected.");
+                alert("Server is busy: Another device is currently connected.");
+            } else {
+                logMessage("🔒 Access Denied: " + msg);
+            }
             downloadsBox.classList.remove('active');
         });
     }

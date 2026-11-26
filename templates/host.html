@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfinityDrop - Host Dashboard</title>
+    <script src="/static/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #00ff88;
+            --primary-hover: #00cc6a;
+            --bg: #0f0f13;
+            --card: #1a1a20;
+            --card-border: #2a2a35;
+            --text: #ffffff;
+            --text-muted: #8e8e9e;
+            --danger: #ff4757;
+            --warning: #ffa502;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .badge-live {
+            background: rgba(0, 255, 136, 0.12);
+            color: var(--primary);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .badge-live::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--primary);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Banner */
+        .host-banner {
+            background: linear-gradient(135deg, #1f2333 0%, #151824 100%);
+            border: 1px solid #32384e;
+            border-left: 4px solid var(--primary);
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 0.92rem;
+            line-height: 1.5;
+            color: #d1d5db;
+        }
+        .host-banner strong { color: #fff; }
+
+        /* Card styles */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            border-bottom: 1px solid #282834;
+            padding-bottom: 12px;
+        }
+        .card-header h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Connection layout */
+        .connect-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 24px;
+            align-items: center;
+        }
+        @media (max-width: 650px) {
+            .connect-grid { grid-template-columns: 1fr; justify-items: center; }
+        }
+        .qr-wrapper {
+            background: #ffffff;
+            padding: 14px;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        #qrcode img, #qrcode canvas {
+            display: block;
+            border-radius: 6px;
+        }
+        .qr-caption {
+            color: #333;
+            font-size: 0.72rem;
+            font-weight: bold;
+            margin-top: 8px;
+            text-align: center;
+        }
+        .connect-details {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .detail-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .detail-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .detail-value-box {
+            display: flex;
+            align-items: center;
+            background: #23232c;
+            border: 1px solid #333342;
+            border-radius: 10px;
+            padding: 10px 14px;
+            gap: 12px;
+        }
+        .detail-text {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            flex: 1;
+            word-break: break-all;
+        }
+        .pin-text {
+            font-size: 1.6rem;
+            letter-spacing: 6px;
+            color: #fff;
+        }
+        .btn {
+            background: #31313e;
+            color: #fff;
+            border: 1px solid #444455;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .btn:hover { background: #414152; border-color: #55556a; }
+        .btn-primary {
+            background: var(--primary);
+            color: #0f0f13;
+            border: none;
+        }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-danger {
+            background: rgba(255, 71, 87, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(255, 71, 87, 0.4);
+        }
+        .btn-danger:hover { background: rgba(255, 71, 87, 0.25); }
+
+        .device-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: #23232c;
+            border: 1px solid #333342;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        .device-info { display: flex; align-items: center; gap: 8px; }
+
+        /* File Upload & Manager */
+        .drop-area {
+            border: 2px dashed #444455;
+            border-radius: 14px;
+            padding: 30px 20px;
+            text-align: center;
+            background: #1e1e26;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+            margin-bottom: 20px;
+        }
+        .drop-area.dragover {
+            border-color: var(--primary);
+            background: rgba(0, 255, 136, 0.05);
+        }
+        .drop-icon { font-size: 2.2rem; margin-bottom: 8px; }
+        .drop-text { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 4px; }
+        .drop-subtext { font-size: 0.8rem; color: var(--text-muted); }
+
+        .folder-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #23232c;
+            border: 1px solid #333342;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 18px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .folder-path-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #ccc;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+        .folder-path {
+            font-family: monospace;
+            color: var(--primary);
+            background: #181820;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+        .folder-actions { display: flex; gap: 8px; }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+        .file-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #23232c;
+            border: 1px solid #333342;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+        }
+        .file-name-size {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow: hidden;
+        }
+        .file-title {
+            color: #fff;
+            font-weight: 600;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .file-size-badge {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .file-item-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .file-item-actions a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 5px 10px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 6px;
+        }
+        .file-item-actions a:hover { background: rgba(0, 255, 136, 0.2); }
+        .empty-files {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        .footer-nav {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .client-mode-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+        .client-mode-link:hover { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="header-title">
+            <h1>∞ InfinityDrop</h1>
+            <span class="badge-live">Host Server Live</span>
+        </div>
+        <a href="/?mode=client" class="btn" title="View standard mobile interface">📱 Switch to Client View</a>
+    </div>
+
+    <!-- Host Announcement Banner -->
+    <div class="host-banner">
+        <strong>🖥️ You are viewing this on the Host PC running the server.</strong><br>
+        To transfer files with your phone or another device, connect from that device by scanning the QR code or visiting the URL below.
+    </div>
+
+    <!-- Connection & PIN Card -->
+    <div class="card">
+        <div class="card-header">
+            <h2>📡 Connect Mobile Device</h2>
+            <button class="btn" onclick="rotatePin()">🔄 Rotate PIN & Reset</button>
+        </div>
+        <div class="connect-grid">
+            <div class="qr-wrapper">
+                <div id="qrcode"></div>
+                <div class="qr-caption">📷 Scan with phone camera</div>
+            </div>
+            <div class="connect-details">
+                <div class="detail-row">
+                    <span class="detail-label">Mobile Connection URL</span>
+                    <div class="detail-value-box">
+                        <span class="detail-text" id="connectUrl">http://{{ server_ip }}:{{ port }}</span>
+                        <button class="btn" onclick="copyText('connectUrl', this)">📋 Copy</button>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Active 6-Digit PIN</span>
+                    <div class="detail-value-box">
+                        <span class="detail-text pin-text" id="sessionPin">{{ pin }}</span>
+                        <button class="btn" onclick="copyText('sessionPin', this)">📋 Copy</button>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Connected Device Lock</span>
+                    <div class="device-status" id="deviceStatus">
+                        <div class="device-info">
+                            <span id="deviceIcon">⚪</span>
+                            <span id="deviceText">{{ 'Locked to ' + authorized_ip if authorized_ip else 'Waiting for mobile connection...' }}</span>
+                        </div>
+                        <button class="btn btn-danger" id="unlockBtn" style="{{ 'display:inline-flex;' if authorized_ip else 'display:none;' }}" onclick="resetSession()">🔓 Unlock</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two-Way Sharing & Final Uploads Manager -->
+    <div class="card">
+        <div class="card-header">
+            <h2>📂 PC-to-Mobile Files (final_uploads)</h2>
+            <span style="font-size:0.82rem; color:var(--text-muted);">Files placed here are ready for mobile download</span>
+        </div>
+
+        <!-- Drag & Drop Host Upload Area -->
+        <input type="file" id="hostFileInput" multiple style="display:none;" onchange="handleHostFileSelect(this.files)">
+        <div class="drop-area" id="dropArea" onclick="document.getElementById('hostFileInput').click()">
+            <div class="drop-icon">📤</div>
+            <div class="drop-text">Click or Drag & Drop files here to share with mobile</div>
+            <div class="drop-subtext">Files are automatically copied to final_uploads and immediately available to your phone</div>
+        </div>
+
+        <!-- Local Folder Path & Shortcut -->
+        <div class="folder-bar">
+            <div class="folder-path-wrap">
+                <span>📁 Folder:</span>
+                <span class="folder-path" id="folderPathText">{{ upload_folder }}</span>
+            </div>
+            <div class="folder-actions">
+                <button class="btn" onclick="copyText('folderPathText', this)">📋 Copy Path</button>
+                <button class="btn" onclick="openFolder()">📂 Open in Explorer</button>
+            </div>
+        </div>
+
+        <!-- Current Files List -->
+        <div class="file-list" id="hostFileList">
+            <div class="empty-files">Loading shared files...</div>
+        </div>
+    </div>
+
+    <div class="footer-nav">
+        <a href="/?mode=client" class="client-mode-link">Want to test the mobile/client transfer interface on this PC? Click here &rarr;</a>
+    </div>
+</div>
+
+<script>
+    const serverUrl = document.getElementById('connectUrl').innerText.trim();
+    const hostToken = "{{ host_token }}";
+
+    // Standard headers for all Host API requests
+    const hostHeaders = {
+        'X-Host-Token': hostToken
+    };
+
+    // Render QR Code
+    function renderQRCode() {
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = '';
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(qrContainer, {
+                text: serverUrl,
+                width: 150,
+                height: 150,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.M
+            });
+        } else {
+            qrContainer.innerHTML = '<p style="color:#666;font-size:0.75rem;">(QR script offline)</p>';
+        }
+    }
+    renderQRCode();
+
+    // Copy Helper
+    function copyText(elementId, btn) {
+        const text = document.getElementById(elementId).innerText.trim();
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ Copied!';
+            btn.style.borderColor = 'var(--primary)';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.borderColor = '';
+            }, 1800);
+        });
+    }
+
+    // Refresh Files List & Status from API
+    function refreshHostDashboard() {
+        fetch('/api/host/status', { headers: hostHeaders })
+            .then(res => res.json())
+            .then(data => {
+                // Update PIN & Server IP
+                document.getElementById('sessionPin').innerText = data.pin;
+                
+                // Update Device Lock Status
+                const deviceIcon = document.getElementById('deviceIcon');
+                const deviceText = document.getElementById('deviceText');
+                const unlockBtn = document.getElementById('unlockBtn');
+                if (data.authorized_ip) {
+                    deviceIcon.innerText = '🟢';
+                    deviceText.innerText = 'Device Active: ' + data.authorized_ip;
+                    unlockBtn.style.display = 'inline-flex';
+                } else {
+                    deviceIcon.innerText = '⚪';
+                    deviceText.innerText = 'Waiting for mobile connection...';
+                    unlockBtn.style.display = 'none';
+                }
+
+                // Render Files
+                const list = document.getElementById('hostFileList');
+                if (!data.files || data.files.length === 0) {
+                    list.innerHTML = '<div class="empty-files">📭 final_uploads folder is empty. Drag files above or paste them into the folder.</div>';
+                    return;
+                }
+                list.innerHTML = '';
+                data.files.forEach(file => {
+                    const card = document.createElement('div');
+                    card.className = 'file-card';
+                    card.innerHTML = `
+                        <div class="file-name-size">
+                            <span class="file-title">📄 ${file.name}</span>
+                            <span class="file-size-badge">${file.size}</span>
+                        </div>
+                        <div class="file-item-actions">
+                            <a href="/download/${encodeURIComponent(file.name)}?token=${data.pin}" download>⬇️ Download</a>
+                            <button class="btn btn-danger" style="padding:4px 8px; font-size:0.8rem;" onclick="deleteFile('${encodeURIComponent(file.name)}')">🗑️</button>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+            })
+            .catch(err => console.error("Error updating host status:", err));
+    }
+    refreshHostDashboard();
+    setInterval(refreshHostDashboard, 4000); // Polling host status every 4 seconds
+
+    // Rotate PIN & Reset Session
+    function rotatePin() {
+        fetch('/api/host/reset-session', { method: 'POST', headers: hostHeaders })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('sessionPin').innerText = data.pin;
+                refreshHostDashboard();
+            });
+    }
+    function resetSession() {
+        rotatePin();
+    }
+
+    // Open Folder in Windows Explorer
+    function openFolder() {
+        fetch('/api/host/open-folder', { method: 'POST', headers: hostHeaders })
+            .catch(err => alert("Could not open folder automatically. Use the Copy Path button instead."));
+    }
+
+    // Delete a file from final_uploads
+    function deleteFile(encodedName) {
+        if (!confirm("Delete this file from final_uploads?")) return;
+        fetch('/api/host/delete/' + encodedName, { method: 'POST', headers: hostHeaders })
+            .then(() => refreshHostDashboard());
+    }
+
+    // Drag and Drop Upload for Host
+    const dropArea = document.getElementById('dropArea');
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, (e) => { e.preventDefault(); dropArea.classList.add('dragover'); }, false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, (e) => { e.preventDefault(); dropArea.classList.remove('dragover'); }, false);
+    });
+    dropArea.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        handleHostFileSelect(files);
+    });
+
+    function handleHostFileSelect(files) {
+        if (!files || files.length === 0) return;
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
+        }
+        dropArea.querySelector('.drop-text').innerText = '⏳ Uploading files to final_uploads...';
+        fetch('/api/host/upload', {
+            method: 'POST',
+            headers: hostHeaders,
+            body: formData
+        })
+        .then(res => res.json())
+        .then(() => {
+            dropArea.querySelector('.drop-text').innerText = 'Click or Drag & Drop files here to share with mobile';
+            refreshHostDashboard();
+        })
+        .catch(err => {
+            alert("Upload failed: " + err);
+            dropArea.querySelector('.drop-text').innerText = 'Click or Drag & Drop files here to share with mobile';
+        });
+    }
+</script>
+</body>
+</html>

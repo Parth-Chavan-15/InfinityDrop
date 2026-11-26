@@ -1,6 +1,14 @@
-# ∞ InfinityDrop
+<h1 align="center">∞ InfinityDrop</h1>
 
-**Secure, high-speed, peer-to-peer local file transfer using Python and Flask.**
+<p align="center">
+  <strong>Secure, high-speed, peer-to-peer local file transfer using Python and Flask.</strong>
+</p>
+
+<p align="center">
+  <img src="assets/host_dashboard.png" alt="InfinityDrop Host Dashboard" width="620" />
+  &nbsp;&nbsp;
+  <img src="assets/mobile_ui.png" alt="InfinityDrop Mobile Interface" width="235" />
+</p>
 
 InfinityDrop is a web-based application that allows seamless two-way file sharing between devices on the same Wi-Fi network. It completely bypasses the internet, ensuring maximum transfer speeds, zero data consumption, and complete privacy.
 
@@ -37,21 +45,25 @@ python app.py
 ```
 
 ### 4. Connect
-The terminal will output a local IP address (e.g., http://192.168.1.5:5000) and a 6-digit PIN.
+The terminal will output:
+* **Host Dashboard (PC):** Open `http://localhost:5000` on your host laptop to view the live QR code, active PIN, device connection status, and share files.
+* **Mobile Connection:** Open the local IP address (e.g., `http://192.168.1.5:5000`) or scan the QR code from your laptop screen on any device connected to the same Wi-Fi network.
 
-Open that URL on any device connected to the same Wi-Fi network.
+Enter the 6-digit PIN on mobile to unlock the interface and start transferring files!
 
-Enter the PIN to unlock the interface and start dropping files!
+### 5. Send Files from PC to Mobile Device
+To transfer files from your laptop to your connected mobile device:
+* **Option A (Host Dashboard):** Drag & drop files directly onto the Host Dashboard in your laptop's browser.
+* **Option B (File Explorer):** Copy and paste files directly into the `final_uploads` folder on your laptop.
 
-### 5. Pull Files from PC to Device
-If you want to transfer files from your laptop back to your connected mobile device, simply copy and paste those files directly into the final_uploads folder on your laptop. Click "Unlock & Refresh Files" on your mobile device, and they will immediately appear ready to download!
+Tap **"🔓 Unlock & Refresh Files"** on your mobile device, and the files will immediately appear ready to download!
 
 ## 🛠️ Tech Stack
 Backend: Python, Flask, Werkzeug
 
 Frontend: HTML5, Vanilla JavaScript, CSS3
 
-Libraries: Resumable.js (for chunked file handling), Flask-CORS
+Libraries: Resumable.js (for chunked file handling), QRCode.js, Flask-CORS
 
 ## 📁 Project Structure
 <pre>
@@ -59,6 +71,9 @@ InfinityDrop/
 ├── app.py                # Main Flask server and API endpoints
 ├── requirements.txt      # Python dependencies
 ├── .gitignore            # Ignored files and folders
+├── assets/               # UI preview screenshots
+├── static/               # Offline frontend libraries (QRCode.js, Resumable.js)
 └── templates/
-    └── index.html        # Frontend UI and client-side logic
+    ├── host.html         # Host PC dashboard and file manager
+    └── index.html        # Mobile/client UI and transfer logic
 </pre>
