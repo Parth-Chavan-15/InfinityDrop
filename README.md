@@ -1,14 +1,33 @@
-<h1 align="center">∞ InfinityDrop</h1>
+<div align="center">
 
-<p align="center">
-  <strong>Secure, high-speed, peer-to-peer local file transfer using Python and Flask.</strong>
-</p>
+# ∞ InfinityDrop
 
-<p align="center">
-  <img src="assets/host_dashboard.png" alt="InfinityDrop Host Dashboard" width="620" />
-  &nbsp;&nbsp;
-  <img src="assets/mobile_ui.png" alt="InfinityDrop Mobile Interface" width="235" />
-</p>
+**High-speed, peer-to-peer local file transfer powered by Python and Flask.**
+
+<br />
+
+<table>
+  <thead>
+    <tr>
+      <th align="center">🖥️ Host Control Hub (Laptop / PC)</th>
+      <th align="center">📱 Client Transfer Interface (Mobile)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" width="70%" valign="top">
+        <img src="assets/host_dashboard.png" alt="InfinityDrop Host Control Hub" />
+      </td>
+      <td align="center" width="30%" valign="top">
+        <img src="assets/mobile_ui.png" alt="InfinityDrop Mobile Interface" />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<br />
+
+</div>
 
 InfinityDrop is a web-based application that allows seamless two-way file sharing between devices on the same Wi-Fi network. It completely bypasses the internet, ensuring maximum transfer speeds, zero data consumption, and complete privacy.
 

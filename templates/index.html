@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InfinityDrop Secure</title>
+    <title>InfinityDrop</title>
     <script src="/static/resumable.min.js"></script>
     <script>
         if (typeof Resumable === 'undefined') {
@@ -11,116 +11,476 @@
         }
     </script>
     <style>
-        :root { --primary: #00ff88; --bg: #0f0f13; --card: #1a1a20; --text: #ffffff; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .container { width: 100%; max-width: 450px; background: var(--card); padding: 40px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; border: 1px solid #333; margin-bottom: 20px; }
-        h1 { margin-bottom: 5px; font-weight: 800; letter-spacing: -1px;}
-        p { color: #888; margin-bottom: 30px; font-size: 0.9rem;}
-        .pin-input { background: #2a2a35; border: 2px solid #333; color: white; padding: 15px; border-radius: 12px; width: 60%; font-size: 1.5rem; text-align: center; margin-bottom: 20px; letter-spacing: 8px; outline: none; font-family: monospace; }
-        .pin-input:focus { border-color: var(--primary); }
-        .drop-zone { border: 2px dashed #444; padding: 40px 20px; border-radius: 16px; transition: 0.3s; cursor: pointer; margin-bottom: 20px; }
-        .progress-container { margin-top: 25px; background: #333; height: 10px; border-radius: 10px; overflow: hidden; display: none; }
-        .progress-bar { height: 100%; width: 0%; background: var(--primary); transition: width 0.2s; }
-        
-        .status-log { margin-top: 15px; text-align: left; max-height: 150px; overflow-y: auto; width: 100%; font-size: 0.85rem; color: #888; }
-        .success-msg { color: var(--primary); margin-bottom: 4px; }
-
-        /* DOWNLOADS */
-        .downloads-box { width: 100%; max-width: 450px; text-align: left; opacity: 0.5; pointer-events: none; transition: 0.3s; }
-        .downloads-box.active { opacity: 1; pointer-events: all; }
-        .file-item { background: #2a2a35; padding: 14px 16px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
-        .file-details { display: flex; flex-direction: column; gap: 3px; max-width: 68%; }
-        .file-title { color: #eee; word-break: break-all; font-size: 0.9rem; font-weight: 500; }
-        .file-size { color: #888; font-size: 0.75rem; }
-        .download-action {
-            background: rgba(0, 255, 136, 0.12);
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 0.85rem;
-            padding: 7px 12px;
-            border-radius: 8px;
-            border: 1px solid rgba(0, 255, 136, 0.25);
-            white-space: nowrap;
+        :root {
+            --bg: #090d16;
+            --surface: #111726;
+            --surface-hover: #161e31;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-focus: rgba(99, 102, 241, 0.6);
+            --primary: #6366f1;
+            --primary-gradient: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+            --accent: #38bdf8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
         }
-        .download-action:hover { background: rgba(0, 255, 136, 0.22); }
-        .refresh-btn { background: #333; color: white; padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; margin-bottom: 15px; width: 100%; font-weight: 600; font-size: 0.9rem; }
-        .refresh-btn:hover { background: #444; }
 
-        /* UX TIP & EMPTY STATE */
-        .tip-box {
-            background: #20202a;
-            border: 1px solid #333345;
-            border-left: 3px solid var(--primary);
-            border-radius: 10px;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.18), transparent 70%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 24px 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Brand Header */
+        .brand-header {
+            text-align: center;
+            padding: 12px 0 6px;
+        }
+        .logo-wrap {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: var(--primary-gradient);
+            border-radius: 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+        }
+        .logo-wrap svg {
+            width: 28px;
+            height: 28px;
+            color: #ffffff;
+        }
+        .brand-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--text);
+        }
+        .brand-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Glass Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px 20px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+        }
+
+        /* PIN Section */
+        .pin-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+        .pin-input {
+            width: 100%;
+            max-width: 260px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            color: #ffffff;
+            font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+            font-size: 1.75rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 12px 16px;
+            border-radius: 14px;
+            letter-spacing: 0.35em;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .pin-input::placeholder {
+            color: #334155;
+            letter-spacing: 0.25em;
+        }
+        .pin-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+            background: rgba(15, 23, 42, 1);
+        }
+
+        /* Tab Switcher */
+        .tab-bar {
+            display: flex;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+        }
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 9px 12px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .tab-btn.active {
+            background: var(--surface-hover);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .tab-btn svg { width: 15px; height: 15px; }
+
+        /* Upload Area */
+        .drop-zone {
+            border: 1.5px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 32px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(15, 23, 42, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.05);
+        }
+        .drop-icon-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+        .drop-icon-wrap svg { width: 22px; height: 22px; }
+        .drop-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .drop-sub {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+        }
+
+        /* Progress Bar */
+        .progress-box {
+            display: none;
+            margin-top: 16px;
+        }
+        .progress-bar-bg {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--primary-gradient);
+            border-radius: 6px;
+            transition: width 0.15s ease;
+        }
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* Status Log */
+        .status-feed {
+            margin-top: 14px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            max-height: 120px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .status-item {
+            padding: 6px 10px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-item.success { color: #34d399; }
+        .status-item.error { color: #f87171; }
+
+        /* Receive Pane */
+        .tip-callout {
+            background: rgba(56, 189, 248, 0.06);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-radius: 12px;
             padding: 12px 14px;
-            margin-bottom: 14px;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            line-height: 1.45;
             display: flex;
             gap: 10px;
             align-items: flex-start;
-            font-size: 0.82rem;
-            line-height: 1.45;
-            color: #bbb;
+            margin-bottom: 14px;
         }
-        .tip-box strong { color: #fff; }
-        .tip-box code { background: #15151e; color: var(--primary); padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 0.8rem; }
-        .tip-icon { font-size: 1.2rem; line-height: 1; margin-top: 1px; }
+        .tip-callout svg {
+            width: 18px;
+            height: 18px;
+            color: var(--accent);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .tip-callout code {
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--accent);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
 
-        .empty-state {
-            text-align: center;
-            padding: 24px 14px;
-            background: #23232c;
+        .btn-action {
+            width: 100%;
+            background: var(--primary-gradient);
+            color: #ffffff;
+            border: none;
+            padding: 12px 16px;
             border-radius: 12px;
-            border: 1px dashed #3a3a4c;
-            margin-top: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px -3px rgba(99, 102, 241, 0.4);
         }
-        .empty-icon { font-size: 2rem; margin-bottom: 6px; }
-        .empty-title { color: #fff; font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
-        .empty-desc { color: #888; font-size: 0.8rem; line-height: 1.4; }
-        .empty-desc code { color: var(--primary); font-family: monospace; }
+        .btn-action:hover { opacity: 0.95; }
+        .btn-action:active { transform: scale(0.98); }
+        .btn-action svg { width: 16px; height: 16px; }
+
+        /* Files List */
+        .file-list {
+            margin-top: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+        .file-row {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .file-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow: hidden;
+            min-width: 0;
+        }
+        .file-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .file-size-tag {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+        }
+        .btn-download {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .btn-download:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        .btn-download svg { width: 13px; height: 13px; }
+
+        .empty-placeholder {
+            text-align: center;
+            padding: 24px 12px;
+            color: var(--text-dim);
+            font-size: 0.82rem;
+        }
+        .empty-placeholder svg {
+            width: 32px;
+            height: 32px;
+            color: #334155;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>∞ InfinityDrop</h1>
-    <p>Secure 2-Way Transfer</p>
-
-    <input type="tel" id="pinCode" class="pin-input" placeholder="••••••" maxlength="6">
-
-    <div class="drop-zone" id="dropTarget">
-        <span style="font-size: 2rem;">📂</span><br>
-        <span>Upload to Laptop</span>
+<div class="app-container">
+    <!-- Brand Header -->
+    <div class="brand-header">
+        <div class="logo-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/>
+            </svg>
+        </div>
+        <h1 class="brand-title">InfinityDrop</h1>
+        <p class="brand-subtitle">High-speed peer-to-peer Wi-Fi transfer</p>
     </div>
 
-    <div class="progress-container" id="progressContainer">
-        <div class="progress-bar" id="progressBar"></div>
+    <!-- PIN Card -->
+    <div class="card pin-section">
+        <span class="section-label">Device Authentication</span>
+        <input type="tel" id="pinCode" class="pin-input" placeholder="••••••" maxlength="6" autofocus autocomplete="off">
     </div>
-    
-    <div class="status-log" id="uploadLog">
-        <div>Enter PIN to Connect</div>
-    </div>
-</div>
 
-<div class="downloads-box" id="downloadsBox">
-    <h3 style="color: white; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 12px;">
-        ⬇️ Download from Laptop
-    </h3>
+    <!-- Tabs & Action Card -->
+    <div class="card">
+        <div class="tab-bar">
+            <button class="tab-btn active" id="tabUpload" onclick="switchTab('upload')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Send to Laptop
+            </button>
+            <button class="tab-btn" id="tabDownload" onclick="switchTab('download')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download Files
+            </button>
+        </div>
 
-    <!-- Clear UX Tip for Laptop to Mobile Sharing -->
-    <div class="tip-box">
-        <div class="tip-icon">💡</div>
-        <div>
-            <strong>Receive files from your PC:</strong><br>
-            Place files inside <code>final_uploads</code> on your laptop (or drop on laptop dashboard), then tap <b>Unlock & Refresh Files</b>.
+        <!-- PANE 1: Upload (Send to Laptop) -->
+        <div id="paneUpload" style="margin-top: 16px;">
+            <div class="drop-zone" id="dropTarget">
+                <div class="drop-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/>
+                    </svg>
+                </div>
+                <div class="drop-title">Select or Drop Files</div>
+                <div class="drop-sub">Chunked & resumable transfers</div>
+            </div>
+
+            <div class="progress-box" id="progressContainer">
+                <div class="progress-bar-bg">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="progressStatus">Uploading...</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+            </div>
+
+            <div class="status-feed" id="uploadLog">
+                <div class="status-item">Enter 6-digit PIN to begin transfer</div>
+            </div>
+        </div>
+
+        <!-- PANE 2: Download (Receive from Laptop) -->
+        <div id="paneDownload" style="display: none; margin-top: 16px;">
+            <div class="tip-callout">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                </svg>
+                <div>
+                    Drop files on the laptop dashboard or copy them into <code>final_uploads</code>, then tap below to download.
+                </div>
+            </div>
+
+            <button class="btn-action" onclick="fetchFiles()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                </svg>
+                Unlock & Refresh Files
+            </button>
+
+            <div class="file-list" id="fileList">
+                <div class="empty-placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <div>Tap the refresh button above to view files</div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <button class="refresh-btn" onclick="fetchFiles()">🔓 Unlock & Refresh Files</button>
-    <div id="fileList"></div>
 </div>
 
 <script>
+    // Tab Switching
+    function switchTab(tab) {
+        document.getElementById('tabUpload').classList.toggle('active', tab === 'upload');
+        document.getElementById('tabDownload').classList.toggle('active', tab === 'download');
+        document.getElementById('paneUpload').style.display = tab === 'upload' ? 'block' : 'none';
+        document.getElementById('paneDownload').style.display = tab === 'download' ? 'block' : 'none';
+        if (tab === 'download' && pinInput.value.length === 6) {
+            fetchFiles();
+        }
+    }
+
     var r = new Resumable({
         target: '/upload',
         chunkSize: 1 * 1024 * 1024,
@@ -131,20 +491,17 @@
 
     var pinInput = document.getElementById('pinCode');
     var uploadLog = document.getElementById('uploadLog');
-    var downloadsBox = document.getElementById('downloadsBox');
-    
     let errorAlertShown = false;
 
-    // Helper to log messages to the screen
-    function logMessage(msg, isSuccess = false) {
+    function logMessage(msg, isSuccess = false, isError = false) {
         let div = document.createElement('div');
+        div.className = 'status-item' + (isSuccess ? ' success' : (isError ? ' error' : ''));
         div.innerText = msg;
-        if (isSuccess) div.className = 'success-msg';
         uploadLog.appendChild(div);
         uploadLog.scrollTop = uploadLog.scrollHeight;
     }
 
-    // Auto-Connect on PIN entry
+    // Auto-login on 6 digits
     pinInput.addEventListener('input', function() {
         if (this.value.length === 6) {
             this.blur();
@@ -160,7 +517,7 @@
         if (pinInput.value.length !== 6) { 
             r.removeFile(file);
             if (!errorAlertShown) {
-                alert("Enter the 6-digit PIN first!"); 
+                alert("Please enter the 6-digit session PIN first."); 
                 errorAlertShown = true;
                 setTimeout(() => { errorAlertShown = false; }, 2000);
             }
@@ -176,30 +533,30 @@
     r.on('progress', function() {
         var percent = Math.floor(r.progress() * 100);
         document.getElementById('progressBar').style.width = percent + '%';
+        document.getElementById('progressPercent').innerText = percent + '%';
     });
 
     r.on('fileSuccess', function(file) {
-        logMessage("✅ " + file.fileName + " sent successfully", true);
+        logMessage("Sent: " + file.fileName, true);
     });
 
     r.on('complete', function() {
-        logMessage("🏁 All files sent. Rotating PIN...");
+        logMessage("Batch complete. Rotating PIN...", true);
 
         fetch('/reset-pin', { 
             method: 'POST',
             headers: { 'X-Upload-PIN': pinInput.value }
         })
         .then(() => {
-            alert("Transfer Complete! PIN has been rotated.");
+            alert("Transfer Complete! Session PIN has rotated.");
             pinInput.value = "";
-            downloadsBox.classList.remove('active');
             setTimeout(() => location.reload(), 1000);
         })
         .catch(err => console.error("Reset failed", err));
     });
 
     r.on('fileError', function(file, message) {
-        logMessage("❌ Error: " + file.fileName + " - " + message);
+        logMessage("Failed: " + file.fileName, false, true);
         if (!errorAlertShown) {
             alert("Upload Failed: " + message);
             errorAlertShown = true;
@@ -210,11 +567,14 @@
     // DOWNLOAD LOGIC
     function fetchFiles() {
         var pin = pinInput.value.trim();
-        if (pin.length < 6) { alert("Please enter the 6-digit PIN first."); return; }
+        if (pin.length < 6) { 
+            alert("Please enter the 6-digit PIN first."); 
+            return; 
+        }
 
         var list = document.getElementById('fileList');
         uploadLog.innerHTML = "";
-        logMessage('Authenticating with PIN...');
+        logMessage('Authenticating...');
         
         fetch('/files', {
             headers: { 'X-Upload-PIN': pin }
@@ -227,15 +587,15 @@
             return response.json();
         })
         .then(files => {
-            downloadsBox.classList.add('active');
-            logMessage("✅ Connected to Laptop", true);
+            logMessage("Connected to host", true);
             list.innerHTML = '';
             if (files.length === 0) {
                 list.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">📭</div>
-                        <div class="empty-title">final_uploads folder is empty</div>
-                        <div class="empty-desc">Place files into <code>final_uploads</code> on your laptop, then tap refresh above.</div>
+                    <div class="empty-placeholder">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <div>No files waiting in final_uploads</div>
                     </div>
                 `;
                 return;
@@ -244,14 +604,17 @@
                 var fileName = typeof fileItem === 'string' ? fileItem : fileItem.name;
                 var fileSize = typeof fileItem === 'object' && fileItem.size ? fileItem.size : '';
                 var item = document.createElement('div');
-                item.className = 'file-item';
+                item.className = 'file-row';
                 var encodedFile = encodeURIComponent(fileName);
                 item.innerHTML = `
-                    <div class="file-details">
-                        <span class="file-title">📄 ${fileName}</span>
-                        ${fileSize ? `<span class="file-size">${fileSize}</span>` : ''}
+                    <div class="file-meta">
+                        <span class="file-name">${fileName}</span>
+                        ${fileSize ? `<span class="file-size-tag">${fileSize}</span>` : ''}
                     </div>
-                    <a class="download-action" href="/download/${encodedFile}?token=${pin}" download>⬇️ Download</a>
+                    <a class="btn-download" href="/download/${encodedFile}?token=${pin}" download>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download
+                    </a>
                 `;
                 list.appendChild(item);
             });
@@ -259,15 +622,17 @@
         .catch(err => {
             var msg = err.message || "";
             if (msg.includes("Wrong PIN") || msg.includes("Invalid PIN")) {
-                logMessage("❌ Wrong PIN. Check laptop screen.");
-                alert("Incorrect PIN! Please check the 6-digit PIN on your laptop.");
+                logMessage("Incorrect PIN", false, true);
+                alert("Incorrect PIN. Please check the PIN on your host laptop.");
             } else if (msg.includes("Busy")) {
-                logMessage("🔒 Server Busy: Another device connected.");
-                alert("Server is busy: Another device is currently connected.");
+                logMessage("Session Busy (Another device connected)", false, true);
+                alert("Server busy: Another device is currently connected.");
+            } else if (msg.includes("Too many")) {
+                logMessage("Rate limited. Please wait 60s.", false, true);
+                alert("Too many failed attempts. Please wait 60 seconds.");
             } else {
-                logMessage("🔒 Access Denied: " + msg);
+                logMessage("Access Denied: " + msg, false, true);
             }
-            downloadsBox.classList.remove('active');
         });
     }
 </script>
